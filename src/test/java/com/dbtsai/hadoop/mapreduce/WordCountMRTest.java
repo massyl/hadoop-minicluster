@@ -19,7 +19,7 @@ import java.util.List;
 public class WordCountMRTest {
 
     @Test
-    public void testWordCountMapper() {
+    public void testWordCountMapper() throws Exception {
         MapDriver<LongWritable, Text, Text, LongWritable> mapDriver = new MapDriver<LongWritable, Text, Text, LongWritable>();
         mapDriver.setMapper(new WordCountMR.WordCountMapper());
 
@@ -38,7 +38,7 @@ public class WordCountMRTest {
     }
 
     @Test
-    public void testWordCountMapperWithInMapperCombiner() {
+    public void testWordCountMapperWithInMapperCombiner() throws Exception {
         MapDriver<LongWritable, Text, Text, LongWritable> mapDriver = new MapDriver<LongWritable, Text, Text, LongWritable>();
         mapDriver.setMapper(new WordCountMR.WordCountMapperWithInMapperCombiner());
 
@@ -52,7 +52,7 @@ public class WordCountMRTest {
     }
 
     @Test
-    public void testWordCountReducer() {
+    public void testWordCountReducer() throws Exception {
         ReduceDriver<Text, LongWritable, Text, LongWritable> reduceDriver = new ReduceDriver<Text, LongWritable, Text, LongWritable>();
         reduceDriver.setReducer(new WordCountMR.WordCountReducer());
 
@@ -69,7 +69,7 @@ public class WordCountMRTest {
     }
 
     @Test
-    public void testWordCountMR() {
+    public void testWordCountMR() throws Exception {
         MapReduceDriver<LongWritable, Text, Text, LongWritable, Text, LongWritable> mapReduceDriver = new MapReduceDriver<LongWritable, Text, Text, LongWritable, Text, LongWritable>();
         mapReduceDriver.setMapper(new WordCountMR.WordCountMapper());
         mapReduceDriver.setReducer(new WordCountMR.WordCountReducer());
@@ -86,7 +86,7 @@ public class WordCountMRTest {
     }
 
     @Test
-    public void testWordCountMRWithInMapperCombiner() {
+    public void testWordCountMRWithInMapperCombiner() throws Exception {
         MapReduceDriver<LongWritable, Text, Text, LongWritable, Text, LongWritable> mapReduceDriver = new MapReduceDriver<LongWritable, Text, Text, LongWritable, Text, LongWritable>();
         mapReduceDriver.setMapper(new WordCountMR.WordCountMapperWithInMapperCombiner());
         mapReduceDriver.setReducer(new WordCountMR.WordCountReducer());

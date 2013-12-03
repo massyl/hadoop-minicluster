@@ -11,22 +11,26 @@ import org.junit.BeforeClass;
  * To change this template use File | Settings | File Templates.
  */
 
-public class HadoopTestBase {
+public class HadoopMiniClusterTestBase {
 
     private static MiniCluster miniCluster;
 
     @BeforeClass
-    public static void oneTimeSetUp() {
+    public static synchronized void oneTimeSetUp() {
         // one-time initialization code
-        miniCluster = new MiniCluster(1, 1);
-        miniCluster.start();
         System.out.println("@BeforeClass - Setting Up Hadoop Mini Cluster");
+        if (miniCluster == null) {
+            miniCluster = new MiniCluster(1, 1);
+            miniCluster.start();
+        }
     }
 
     @AfterClass
-    public static void oneTimeTearDown() {
+    public static synchronized void oneTimeTearDown() {
         // one-time cleanup code
-        miniCluster.shutdown();
         System.out.println("@AfterClass - Tearing Down Hadoop Mini Cluster");
+        if (miniCluster != null) {
+            miniCluster.shutdown();
+        }
     }
 }

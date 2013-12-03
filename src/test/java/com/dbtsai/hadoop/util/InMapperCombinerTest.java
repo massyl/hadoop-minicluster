@@ -31,7 +31,7 @@ public class InMapperCombinerTest {
     }
 
     @Test
-    public void testInMapperCombinerCounting() throws IOException, InterruptedException {
+    public void testInMapperCombinerCounting() throws Exception {
         final int cacheCapacity = 3;
 
         InMapperCombiner<Text, LongWritable> combiner = new InMapperCombiner<Text, LongWritable>(
@@ -109,7 +109,7 @@ public class InMapperCombinerTest {
     }
 
     @Test
-    public void testInMapperCombinerCountingWithoutCombiningFunction() throws IOException, InterruptedException {
+    public void testInMapperCombinerCountingWithoutCombiningFunction() throws Exception {
         final int cacheCapacity = 5;
 
         InMapperCombiner<Text, LongWritable> combiner = new InMapperCombiner<Text, LongWritable>(cacheCapacity);
@@ -135,7 +135,7 @@ public class InMapperCombinerTest {
     }
 
     @Test
-    public void testInMapperCombinerCountingErrorHandling() throws IOException, InterruptedException {
+    public void testInMapperCombinerCountingErrorHandling() throws Exception {
         /**
          *  Since we can not throw checked InterruptedException and IOException in LinkedHashMap,
          *  we convert it to unchecked exception, catch them in InMapperCombiner.write(), and then
@@ -206,7 +206,7 @@ public class InMapperCombinerTest {
     }
 
     @Test
-    public void testInMapperCombinerNotChangeTheInputKeyValue() throws IOException, InterruptedException {
+    public void testInMapperCombinerNotChangeTheInputKeyValue() throws Exception {
         /**
          *  In Hadoop, context.write(key, value) should have a new copy of key and value in context.write().
          *  This is because lots of time, people use
