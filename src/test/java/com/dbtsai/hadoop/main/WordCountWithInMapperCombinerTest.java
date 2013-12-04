@@ -2,10 +2,24 @@ package com.dbtsai.hadoop.main;
 
 import com.dbtsai.hadoop.mapreduce.WordCountMR;
 import com.dbtsai.hadoop.util.HadoopMiniClusterTestBase;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,24 +29,142 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class WordCountWithInMapperCombinerTest extends HadoopMiniClusterTestBase {
+    private static Configuration conf;
 
-    @Test
-    public void testWordCountMapper() throws Exception {
-        MapDriver<LongWritable, Text, Text, LongWritable> mapDriver = new MapDriver<LongWritable, Text, Text, LongWritable>();
-        mapDriver.setMapper(new WordCountMR.WordCountMapper());
+    @BeforeClass
+    public static void uploadDataSets() throws Exception {
+        BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiJavaPage.txt")));
+        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
+        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
 
-        // The ordering does matter, and it's the same as the emitting ordering.
-        mapDriver.withInput(new LongWritable(1), new Text("apple walnut avocado avocado walnut apple avocado"));
+        FSDataOutputStream out;
+        conf = getConfiguration();
+        FileSystem fs = FileSystem.get(conf);
 
-        mapDriver.withOutput(new Text("apple"), new LongWritable(1));
-        mapDriver.withOutput(new Text("walnut"), new LongWritable(1));
-        mapDriver.withOutput(new Text("avocado"), new LongWritable(1));
-        mapDriver.withOutput(new Text("avocado"), new LongWritable(1));
-        mapDriver.withOutput(new Text("walnut"), new LongWritable(1));
-        mapDriver.withOutput(new Text("apple"), new LongWritable(1));
-        mapDriver.withOutput(new Text("avocado"), new LongWritable(1));
+        out = fs.create(new Path("/tmp/WordCountWithInMapperCombinerTest/", "WikiJavaPage.txt"));
+        for (String line = wikiJavaPageIn.readLine(); line != null; line = wikiJavaPageIn.readLine()) {
+            out.writeBytes(line);
+        }
+        wikiJavaPageIn.close();
+        out.close();
 
-        mapDriver.runTest();
+        out = fs.create(new Path("/tmp/WordCountWithInMapperCombinerTest/", "WikiPythonPage.txt"));
+        for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
+            out.writeBytes(line);
+        }
+        wikiPythonPageIn.close();
+        out.close();
+
+        out = fs.create(new Path("/tmp/WordCountWithInMapperCombinerTest/", "WikiScalaPage.txt"));
+        for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
+            out.writeBytes(line);
+        }
+        wikiScalaPageIn.close();
+        out.close();
     }
 
+    @Test
+    public void testWordCountWithWikiJavaPageDataSet() throws Exception {
+        String[] arg = new String[]{"/tmp/WordCountWithInMapperCombinerTest/WikiJavaPage.txt", "/tmp/WordCountWithInMapperCombinerTest/WikiJavaPageResult/"};
+        boolean isSuccessful = WordCountWithInMapperCombiner.main(arg, conf);
+
+        Map<String, Long> wordCount = new HashMap<String, Long>();
+
+        FileSystem fs = FileSystem.get(conf);
+        FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithInMapperCombinerTest/WikiJavaPageResult/"));
+
+        for (int i = 0; i < status.length; i++) {
+            if (status[i].getPath().getName().contains("part-r-")) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    String temp[] = line.split("\t");
+                    wordCount.put(temp[0], Long.parseLong(temp[1]));
+                }
+            }
+        }
+
+        for (Map.Entry<String, Long> entry : wordCount.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
+        assertTrue(isSuccessful);
+        assertEquals("Key = for, Value = 2", wordCount.get("for").intValue(), 2);
+        assertEquals("Key = developed, Value = 3", wordCount.get("developed").intValue(), 3);
+        assertEquals("Key = is, Value = 3", wordCount.get("is").intValue(), 3);
+        assertEquals("Key = as, Value = 6", wordCount.get("as").intValue(), 6);
+        assertEquals("Key = the, Value = 5", wordCount.get("the").intValue(), 5);
+        assertEquals("Key = in, Value = 4", wordCount.get("in").intValue(), 4);
+        assertEquals("Key = java, Value = 10", wordCount.get("java").intValue(), 10);
+    }
+
+    @Test
+    public void testWordCountWithWikiPythonPageDataSet() throws Exception {
+        String[] arg = new String[]{"/tmp/WordCountWithInMapperCombinerTest/WikiPythonPage.txt", "/tmp/WordCountWithInMapperCombinerTest/WikiPythonPageResult/"};
+        boolean isSuccessful = WordCountWithInMapperCombiner.main(arg, conf);
+
+        Map<String, Long> wordCount = new HashMap<String, Long>();
+
+        FileSystem fs = FileSystem.get(conf);
+        FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithInMapperCombinerTest/WikiPythonPageResult/"));
+
+        for (int i = 0; i < status.length; i++) {
+            if (status[i].getPath().getName().contains("part-r-")) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    String temp[] = line.split("\t");
+                    wordCount.put(temp[0], Long.parseLong(temp[1]));
+                }
+            }
+        }
+
+        for (Map.Entry<String, Long> entry : wordCount.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
+        assertTrue(isSuccessful);
+        assertEquals("Key = need, Value = 1", wordCount.get("need").intValue(), 1);
+        assertEquals("Key = its, Value = 4", wordCount.get("its").intValue(), 4);
+        assertEquals("Key = run, Value = 2", wordCount.get("run").intValue(), 2);
+        assertEquals("Key = programming, Value = 3", wordCount.get("programming").intValue(), 3);
+        assertEquals("Key = a, Value = 9", wordCount.get("a").intValue(), 9);
+        assertEquals("Key = to, Value = 6", wordCount.get("to").intValue(), 6);
+        assertEquals("Key = and, Value = 14", wordCount.get("and").intValue(), 14);
+    }
+
+    @Test
+    public void testWordCountWithWikiScalaPageDataSet() throws Exception {
+        String[] arg = new String[]{"/tmp/WordCountWithInMapperCombinerTest/WikiScalaPage.txt", "/tmp/WordCountWithInMapperCombinerTest/WikiScalaPageResult/"};
+        boolean isSuccessful = WordCountWithInMapperCombiner.main(arg, conf);
+
+        Map<String, Long> wordCount = new HashMap<String, Long>();
+
+        FileSystem fs = FileSystem.get(conf);
+        FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithInMapperCombinerTest/WikiScalaPageResult/"));
+
+        for (int i = 0; i < status.length; i++) {
+            if (status[i].getPath().getName().contains("part-r-")) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    String temp[] = line.split("\t");
+                    wordCount.put(temp[0], Long.parseLong(temp[1]));
+                }
+            }
+        }
+
+        for (Map.Entry<String, Long> entry : wordCount.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
+        assertTrue(isSuccessful);
+        assertEquals("Key = system, Value = 3", wordCount.get("system").intValue(), 3);
+        assertEquals("Key = low, Value = 2", wordCount.get("low").intValue(), 2);
+        assertEquals("Key = jvm, Value = 2", wordCount.get("jvm").intValue(), 2);
+        assertEquals("Key = classes, Value = 1", wordCount.get("classes").intValue(), 1);
+        assertEquals("Key = including, Value = 3", wordCount.get("including").intValue(), 3);
+        assertEquals("Key = by, Value = 2", wordCount.get("by").intValue(), 2);
+        assertEquals("Key = the, Value = 12", wordCount.get("the").intValue(), 12);
+    }
 }

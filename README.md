@@ -17,3 +17,7 @@ Usage
 Use the `gen-idea` sbt task to create Idea project files.
 
 https://github.com/Sciss/ScalaCollider/wiki/First-installation-of-sbt-and-idea
+
+http://www.lopakalogic.com/articles/hadoop-articles/hadoop-testing-with-minicluster/
+
+http://www.eligotech.com/2013/08/end-to-end-testing-pig-scripts-with-scala-and-sbt/

@@ -20,6 +20,7 @@ object BuildSettings {
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
     testListeners <<= (target, streams).map((t, s) => Seq(new eu.henkelmann.sbt.JUnitXmlTestsListener(t.getAbsolutePath))),
     resolvers += "Cloudera Repository" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
+    parallelExecution in Test := false,
     libraryDependencies ++= sharedLibraryDependencies
   ) ++ genIdeaFastSetting
 }

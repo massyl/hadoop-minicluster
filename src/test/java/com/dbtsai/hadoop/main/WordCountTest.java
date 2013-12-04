@@ -29,9 +29,11 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
 
     @BeforeClass
     public static void uploadDataSets() throws Exception {
-        BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClass().getResourceAsStream("/com/dbtsai/hadoop/main/WikiJavaPage.txt")));
-        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClass().getResourceAsStream("/com/dbtsai/hadoop/main/WikiPythonPage.txt")));
-        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClass().getResourceAsStream("/com/dbtsai/hadoop/main/WikiScalaPage.txt")));
+        // this.getClass.getProtectionDomain().getCodeSource().getLocation().getPath() + "/hadoop-site.xml"
+
+        BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiJavaPage.txt")));
+        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
+        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
 
         FSDataOutputStream out;
         conf = getConfiguration();
@@ -85,13 +87,13 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         }
 
         assertTrue(isSuccessful);
-        assertEquals("Key = for, Value = 2", wordCount.get("for"), "2");
-        assertEquals("Key = developed, Value = 3", wordCount.get("developed"), "3");
-        assertEquals("Key = is, Value = 3", wordCount.get("is"), "3");
-        assertEquals("Key = as, Value = 6", wordCount.get("as"), "6");
-        assertEquals("Key = the, Value = 5", wordCount.get("the"), "5");
-        assertEquals("Key = in, Value = 4", wordCount.get("in"), "4");
-        assertEquals("Key = java, Value = 10", wordCount.get("java"), "10");
+        assertEquals("Key = for, Value = 2", wordCount.get("for").intValue(), 2);
+        assertEquals("Key = developed, Value = 3", wordCount.get("developed").intValue(), 3);
+        assertEquals("Key = is, Value = 3", wordCount.get("is").intValue(), 3);
+        assertEquals("Key = as, Value = 6", wordCount.get("as").intValue(), 6);
+        assertEquals("Key = the, Value = 5", wordCount.get("the").intValue(), 5);
+        assertEquals("Key = in, Value = 4", wordCount.get("in").intValue(), 4);
+        assertEquals("Key = java, Value = 10", wordCount.get("java").intValue(), 10);
     }
 
     @Test
@@ -99,7 +101,34 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         String[] arg = new String[]{"/tmp/WordCountTest/WikiPythonPage.txt", "/tmp/WordCountTest/WikiPythonPageResult/"};
         boolean isSuccessful = WordCount.main(arg, conf);
 
+        Map<String, Long> wordCount = new HashMap<String, Long>();
+
+        FileSystem fs = FileSystem.get(conf);
+        FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountTest/WikiPythonPageResult/"));
+
+        for (int i = 0; i < status.length; i++) {
+            if (status[i].getPath().getName().contains("part-r-")) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    String temp[] = line.split("\t");
+                    wordCount.put(temp[0], Long.parseLong(temp[1]));
+                }
+            }
+        }
+
+        for (Map.Entry<String, Long> entry : wordCount.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
         assertTrue(isSuccessful);
+        assertEquals("Key = need, Value = 1", wordCount.get("need").intValue(), 1);
+        assertEquals("Key = its, Value = 4", wordCount.get("its").intValue(), 4);
+        assertEquals("Key = run, Value = 2", wordCount.get("run").intValue(), 2);
+        assertEquals("Key = programming, Value = 3", wordCount.get("programming").intValue(), 3);
+        assertEquals("Key = a, Value = 9", wordCount.get("a").intValue(), 9);
+        assertEquals("Key = to, Value = 6", wordCount.get("to").intValue(), 6);
+        assertEquals("Key = and, Value = 14", wordCount.get("and").intValue(), 14);
     }
 
     @Test
@@ -107,6 +136,33 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         String[] arg = new String[]{"/tmp/WordCountTest/WikiScalaPage.txt", "/tmp/WordCountTest/WikiScalaPageResult/"};
         boolean isSuccessful = WordCount.main(arg, conf);
 
+        Map<String, Long> wordCount = new HashMap<String, Long>();
+
+        FileSystem fs = FileSystem.get(conf);
+        FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountTest/WikiScalaPageResult/"));
+
+        for (int i = 0; i < status.length; i++) {
+            if (status[i].getPath().getName().contains("part-r-")) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(status[i].getPath())));
+
+                for (String line = br.readLine(); line != null; line = br.readLine()) {
+                    String temp[] = line.split("\t");
+                    wordCount.put(temp[0], Long.parseLong(temp[1]));
+                }
+            }
+        }
+
+        for (Map.Entry<String, Long> entry : wordCount.entrySet()) {
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+        }
+
         assertTrue(isSuccessful);
+        assertEquals("Key = system, Value = 3", wordCount.get("system").intValue(), 3);
+        assertEquals("Key = low, Value = 2", wordCount.get("low").intValue(), 2);
+        assertEquals("Key = jvm, Value = 2", wordCount.get("jvm").intValue(), 2);
+        assertEquals("Key = classes, Value = 1", wordCount.get("classes").intValue(), 1);
+        assertEquals("Key = including, Value = 3", wordCount.get("including").intValue(), 3);
+        assertEquals("Key = by, Value = 2", wordCount.get("by").intValue(), 2);
+        assertEquals("Key = the, Value = 12", wordCount.get("the").intValue(), 12);
     }
 }
