@@ -1,6 +1,6 @@
 package com.dbtsai.hadoop.util
 
-import java.io.{ FileOutputStream, File }
+import java.io.{FileOutputStream, File}
 import org.apache.hadoop.mapred.MiniMRCluster
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.MiniDFSCluster
@@ -15,20 +15,19 @@ import org.apache.hadoop.hdfs.MiniDFSCluster
 
 class MiniCluster(dataNodes: Int = 1, taskTrackers: Int = 1) {
 
-  //private val configurationFilePath = this.getClass.getProtectionDomain().getCodeSource().getLocation().getPath() + "/hadoop-site.xml"
+  private val configurationFilePath = this.getClass.getProtectionDomain().getCodeSource().getLocation().getPath() + "/hadoop-site.xml"
 
   var configuration: Option[Configuration] = None
   var miniDFSCluster: Option[MiniDFSCluster] = None
   var miniMRCluster: Option[MiniMRCluster] = None
-  //var conf: Configuration
 
   def start() {
-    System.setProperty("hadoop.log.dir", "target/test/logs")
+    System.setProperty("hadoop.log.dir", "target/log/hadoop-test")
 
-    //val configurationFile = new File(configurationFilePath)
-    //if (configurationFile.exists()) {
-    //  configurationFile.delete()
-    //}
+    val configurationFile = new File(configurationFilePath)
+    if (configurationFile.exists()) {
+      configurationFile.delete()
+    }
 
     val builder = new MiniDFSCluster.Builder(new Configuration())
     miniDFSCluster = Some(builder.format(true).numDataNodes(dataNodes).build())
@@ -45,9 +44,7 @@ class MiniCluster(dataNodes: Int = 1, taskTrackers: Int = 1) {
       configuration.set("pig.jobcontrol.sleep", "100")
       configuration
     })
-    // configuration.foreach(_.writeXml(new FileOutputStream(configurationFile)))
-
-    //conf = configuration.get
+    configuration.foreach(_.writeXml(new FileOutputStream(configurationFile)))
 
     // Set the system properties needed by Pig
     System.setProperty("cluster", configuration.get.get("mapred.job.tracker"))
@@ -60,9 +57,9 @@ class MiniCluster(dataNodes: Int = 1, taskTrackers: Int = 1) {
     miniDFSCluster = None
     miniMRCluster.foreach(_.shutdown())
     miniMRCluster = None
-    //val configurationFile = new File(configurationFilePath)
-    //if (configurationFile.exists()) {
-    //  configurationFile.delete()
-    //}
+    val configurationFile = new File(configurationFilePath)
+    if (configurationFile.exists()) {
+      configurationFile.delete()
+    }
   }
 }

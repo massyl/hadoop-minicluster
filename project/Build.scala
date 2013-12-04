@@ -14,7 +14,7 @@ object BuildSettings {
     version := "0.1",
     organization := "com.dbtsai",
     scalaVersion := "2.9.2",
-    exportJars := true,
+    exportJars := false,
     crossPaths := false,
     javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
@@ -48,6 +48,7 @@ object Dependencies {
     "org.scalatest" %% "scalatest" % "1.9.1" % "test" intransitive(),
     "commons-lang" % "commons-lang" % "2.6",
     "com.google.guava" % "guava" % "15.0",
+    "com.google.code.gson" % "gson" % "2.2.4",
     "log4j" % "log4j" % "1.2.17"
   )
 
@@ -55,7 +56,8 @@ object Dependencies {
     case "2.0.0-mr1-cdh4.2.0" =>
       Seq(
         "com.google.protobuf" % "protobuf-java" % "2.4.0a" ,//intransitive(),
-        "commons-daemon" % "commons-daemon" % "1.0.5" % "test",// intransitive(),
+        "commons-io" % "commons-io" % "2.4",
+        "commons-daemon" % "commons-daemon" % "1.0.15" % "test",// intransitive(),
         "commons-logging" % "commons-logging" % "1.1.3",//intransitive(),
         "org.antlr" % "antlr" % "3.4" ,//intransitive(),
         "org.apache.avro" % "avro" % "1.7.4",// intransitive(),

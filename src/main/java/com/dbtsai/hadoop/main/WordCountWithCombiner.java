@@ -1,6 +1,7 @@
 package com.dbtsai.hadoop.main;
 
 import com.dbtsai.hadoop.mapreduce.WordCountMR;
+import com.google.gson.Gson;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -20,8 +21,13 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
  */
 public class WordCountWithCombiner {
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        // Ignore the worlds appeared less than 1000 times.
+        Configuration conf;
+        if (args[2] == null) {
+            conf = new Configuration();
+        } else {
+            Gson gson = new Gson();
+            conf = gson.fromJson(args[2], Configuration.class);
+        }        // Ignore the worlds appeared less than 1000 times.
         // conf.set("minReducerOutput", "1000");
 
         Job job = new Job(conf, "Word Count With Combiner");
