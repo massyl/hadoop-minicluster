@@ -57,7 +57,7 @@ object Dependencies {
       Seq(
         "com.google.protobuf" % "protobuf-java" % "2.4.0a" ,//intransitive(),
         "commons-io" % "commons-io" % "2.4",
-        "commons-daemon" % "commons-daemon" % "1.0.15" % "test",// intransitive(),
+        "commons-daemon" % "commons-daemon" % "1.0.15",// intransitive(),
         "commons-logging" % "commons-logging" % "1.1.3",//intransitive(),
         "org.antlr" % "antlr" % "3.4" ,//intransitive(),
         "org.apache.avro" % "avro" % "1.7.4",// intransitive(),
