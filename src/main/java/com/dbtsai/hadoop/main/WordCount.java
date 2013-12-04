@@ -1,7 +1,6 @@
 package com.dbtsai.hadoop.main;
 
 import com.dbtsai.hadoop.mapreduce.WordCountMR;
-import com.google.gson.Gson;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -20,14 +19,12 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
  * To change this template use File | Settings | File Templates.
  */
 public class WordCount {
-    public static void main(String[] args) throws Exception {
-        Configuration conf;
-        if (args[2] == null) {
-            conf = new Configuration();
-        } else {
-            Gson gson = new Gson();
-            conf = gson.fromJson(args[2], Configuration.class);
-        }
+
+    public static boolean main(String[] args) throws Exception {
+        return main(args, new Configuration());
+    }
+
+    public static boolean main(String[] args, Configuration conf) throws Exception {
         // Ignore the worlds appeared less than 1000 times.
         // conf.set("minReducerOutput", "1000");
 
@@ -45,8 +42,9 @@ public class WordCount {
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.setNumReduceTasks(16);
+        job.setNumReduceTasks(2);
 
         job.waitForCompletion(true);
+        return job.isSuccessful();
     }
 }

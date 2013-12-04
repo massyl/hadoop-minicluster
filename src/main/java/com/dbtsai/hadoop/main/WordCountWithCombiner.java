@@ -20,14 +20,12 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
  * To change this template use File | Settings | File Templates.
  */
 public class WordCountWithCombiner {
-    public static void main(String[] args) throws Exception {
-        Configuration conf;
-        if (args[2] == null) {
-            conf = new Configuration();
-        } else {
-            Gson gson = new Gson();
-            conf = gson.fromJson(args[2], Configuration.class);
-        }        // Ignore the worlds appeared less than 1000 times.
+    public static boolean main(String[] args) throws Exception {
+        return main(args, new Configuration());
+    }
+
+    public static boolean main(String[] args, Configuration conf) throws Exception {
+        // Ignore the worlds appeared less than 1000 times.
         // conf.set("minReducerOutput", "1000");
 
         Job job = new Job(conf, "Word Count With Combiner");
@@ -45,8 +43,9 @@ public class WordCountWithCombiner {
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
-        job.setNumReduceTasks(16);
+        job.setNumReduceTasks(2);
 
         job.waitForCompletion(true);
+        return job.isSuccessful();
     }
 }
