@@ -29,8 +29,6 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
 
     @BeforeClass
     public static void uploadDataSets() throws Exception {
-        // this.getClass.getProtectionDomain().getCodeSource().getLocation().getPath() + "/hadoop-site.xml"
-
         BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiJavaPage.txt")));
         BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
         BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
@@ -41,24 +39,26 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
 
         out = fs.create(new Path("/tmp/WordCountTest/", "WikiJavaPage.txt"));
         for (String line = wikiJavaPageIn.readLine(); line != null; line = wikiJavaPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiJavaPageIn.close();
         out.close();
 
         out = fs.create(new Path("/tmp/WordCountTest/", "WikiPythonPage.txt"));
         for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiPythonPageIn.close();
         out.close();
 
         out = fs.create(new Path("/tmp/WordCountTest/", "WikiScalaPage.txt"));
         for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiScalaPageIn.close();
         out.close();
+
+        conf.set("mapred.job.tracker", "local");
     }
 
     @Test

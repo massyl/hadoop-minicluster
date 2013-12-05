@@ -1,15 +1,11 @@
 package com.dbtsai.hadoop.main;
 
-import com.dbtsai.hadoop.mapreduce.WordCountMR;
 import com.dbtsai.hadoop.util.HadoopMiniClusterTestBase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -43,24 +39,26 @@ public class WordCountWithCombinerTest extends HadoopMiniClusterTestBase {
 
         out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiJavaPage.txt"));
         for (String line = wikiJavaPageIn.readLine(); line != null; line = wikiJavaPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiJavaPageIn.close();
         out.close();
 
         out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiPythonPage.txt"));
         for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiPythonPageIn.close();
         out.close();
 
         out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiScalaPage.txt"));
         for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
-            out.writeBytes(line);
+            out.writeBytes(line + "\n");
         }
         wikiScalaPageIn.close();
         out.close();
+
+        conf.set("mapred.job.tracker", "local");
     }
 
     @Test
