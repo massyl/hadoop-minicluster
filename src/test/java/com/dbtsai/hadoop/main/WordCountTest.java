@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -25,16 +24,14 @@ import static org.junit.Assert.assertTrue;
  * To change this template use File | Settings | File Templates.
  */
 public class WordCountTest extends HadoopMiniClusterTestBase {
-    private static Configuration conf;
 
-    @BeforeClass
-    public static void uploadDataSets() throws Exception {
+    @Test
+    public void testWordCountWithWikiJavaPageDataSet() throws Exception {
         BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiJavaPage.txt")));
-        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
-        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
 
         FSDataOutputStream out;
-        conf = getConfiguration();
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
         FileSystem fs = FileSystem.get(conf);
 
         out = fs.create(new Path("/tmp/WordCountTest/", "WikiJavaPage.txt"));
@@ -44,31 +41,11 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         wikiJavaPageIn.close();
         out.close();
 
-        out = fs.create(new Path("/tmp/WordCountTest/", "WikiPythonPage.txt"));
-        for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
-            out.writeBytes(line + "\n");
-        }
-        wikiPythonPageIn.close();
-        out.close();
-
-        out = fs.create(new Path("/tmp/WordCountTest/", "WikiScalaPage.txt"));
-        for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
-            out.writeBytes(line + "\n");
-        }
-        wikiScalaPageIn.close();
-        out.close();
-
-        conf.set("mapred.job.tracker", "local");
-    }
-
-    @Test
-    public void testWordCountWithWikiJavaPageDataSet() throws Exception {
         String[] arg = new String[]{"/tmp/WordCountTest/WikiJavaPage.txt", "/tmp/WordCountTest/WikiJavaPageResult/"};
         boolean isSuccessful = WordCount.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountTest/WikiJavaPageResult/"));
 
         for (int i = 0; i < status.length; i++) {
@@ -87,23 +64,36 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         }
 
         assertTrue(isSuccessful);
-        assertEquals("Key = for, Value = 2", wordCount.get("for").intValue(), 2);
-        assertEquals("Key = developed, Value = 3", wordCount.get("developed").intValue(), 3);
-        assertEquals("Key = is, Value = 3", wordCount.get("is").intValue(), 3);
-        assertEquals("Key = as, Value = 6", wordCount.get("as").intValue(), 6);
-        assertEquals("Key = the, Value = 5", wordCount.get("the").intValue(), 5);
-        assertEquals("Key = in, Value = 4", wordCount.get("in").intValue(), 4);
-        assertEquals("Key = java, Value = 10", wordCount.get("java").intValue(), 10);
+        assertEquals("Key = for, Value = 3", 3, wordCount.get("for").intValue());
+        assertEquals("Key = developed, Value = 3", 3, wordCount.get("developed").intValue());
+        assertEquals("Key = is, Value = 4", 4, wordCount.get("is").intValue());
+        assertEquals("Key = as, Value = 6", 6, wordCount.get("as").intValue());
+        assertEquals("Key = the, Value = 6", 6, wordCount.get("the").intValue());
+        assertEquals("Key = in, Value = 4", 4, wordCount.get("in").intValue());
+        assertEquals("Key = java, Value = 10", 10, wordCount.get("java").intValue());
     }
 
     @Test
     public void testWordCountWithWikiPythonPageDataSet() throws Exception {
+        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
+
+        FSDataOutputStream out;
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
+        FileSystem fs = FileSystem.get(conf);
+
+        out = fs.create(new Path("/tmp/WordCountTest/", "WikiPythonPage.txt"));
+        for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
+            out.writeBytes(line + "\n");
+        }
+        wikiPythonPageIn.close();
+        out.close();
+
         String[] arg = new String[]{"/tmp/WordCountTest/WikiPythonPage.txt", "/tmp/WordCountTest/WikiPythonPageResult/"};
         boolean isSuccessful = WordCount.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountTest/WikiPythonPageResult/"));
 
         for (int i = 0; i < status.length; i++) {
@@ -122,23 +112,36 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         }
 
         assertTrue(isSuccessful);
-        assertEquals("Key = need, Value = 1", wordCount.get("need").intValue(), 1);
-        assertEquals("Key = its, Value = 4", wordCount.get("its").intValue(), 4);
-        assertEquals("Key = run, Value = 2", wordCount.get("run").intValue(), 2);
-        assertEquals("Key = programming, Value = 3", wordCount.get("programming").intValue(), 3);
-        assertEquals("Key = a, Value = 9", wordCount.get("a").intValue(), 9);
-        assertEquals("Key = to, Value = 6", wordCount.get("to").intValue(), 6);
-        assertEquals("Key = and, Value = 14", wordCount.get("and").intValue(), 14);
+        assertEquals("Key = implementations, Value = 1", 1, wordCount.get("implementations").intValue());
+        assertEquals("Key = its, Value = 3", 3, wordCount.get("its").intValue());
+        assertEquals("Key = code, Value = 2", 2, wordCount.get("code").intValue());
+        assertEquals("Key = programming, Value = 3", 3, wordCount.get("programming").intValue());
+        assertEquals("Key = a, Value = 6", 6, wordCount.get("a").intValue());
+        assertEquals("Key = to, Value = 2", 2, wordCount.get("to").intValue());
+        assertEquals("Key = and, Value = 8", 8, wordCount.get("and").intValue());
     }
 
     @Test
     public void testWordCountWithWikiScalaPageDataSet() throws Exception {
+        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
+
+        FSDataOutputStream out;
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
+        FileSystem fs = FileSystem.get(conf);
+
+        out = fs.create(new Path("/tmp/WordCountTest/", "WikiScalaPage.txt"));
+        for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
+            out.writeBytes(line + "\n");
+        }
+        wikiScalaPageIn.close();
+        out.close();
+
         String[] arg = new String[]{"/tmp/WordCountTest/WikiScalaPage.txt", "/tmp/WordCountTest/WikiScalaPageResult/"};
         boolean isSuccessful = WordCount.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountTest/WikiScalaPageResult/"));
 
         for (int i = 0; i < status.length; i++) {
@@ -157,12 +160,12 @@ public class WordCountTest extends HadoopMiniClusterTestBase {
         }
 
         assertTrue(isSuccessful);
-        assertEquals("Key = system, Value = 3", wordCount.get("system").intValue(), 3);
-        assertEquals("Key = low, Value = 2", wordCount.get("low").intValue(), 2);
-        assertEquals("Key = jvm, Value = 2", wordCount.get("jvm").intValue(), 2);
-        assertEquals("Key = classes, Value = 1", wordCount.get("classes").intValue(), 1);
-        assertEquals("Key = including, Value = 3", wordCount.get("including").intValue(), 3);
-        assertEquals("Key = by, Value = 2", wordCount.get("by").intValue(), 2);
-        assertEquals("Key = the, Value = 12", wordCount.get("the").intValue(), 12);
+        assertEquals("Key = system, Value = 2", 2, wordCount.get("system").intValue());
+        assertEquals("Key = low, Value = 1", 1, wordCount.get("low").intValue());
+        assertEquals("Key = jvm, Value = 1", 1, wordCount.get("jvm").intValue());
+        assertEquals("Key = subclasses, Value = 1", 1, wordCount.get("subclasses").intValue());
+        assertEquals("Key = including, Value = 4", 4, wordCount.get("including").intValue());
+        assertEquals("Key = bytecode, Value = 1", 1, wordCount.get("bytecode").intValue());
+        assertEquals("Key = the, Value = 7", 7, wordCount.get("the").intValue());
     }
 }

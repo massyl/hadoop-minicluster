@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -25,16 +24,14 @@ import static org.junit.Assert.assertTrue;
  * To change this template use File | Settings | File Templates.
  */
 public class WordCountWithCombinerTest extends HadoopMiniClusterTestBase {
-    private static Configuration conf;
 
-    @BeforeClass
-    public static void uploadDataSets() throws Exception {
+    @Test
+    public void testWordCountWithWikiJavaPageDataSet() throws Exception {
         BufferedReader wikiJavaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiJavaPage.txt")));
-        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
-        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
-
         FSDataOutputStream out;
-        conf = getConfiguration();
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
+
         FileSystem fs = FileSystem.get(conf);
 
         out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiJavaPage.txt"));
@@ -44,31 +41,11 @@ public class WordCountWithCombinerTest extends HadoopMiniClusterTestBase {
         wikiJavaPageIn.close();
         out.close();
 
-        out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiPythonPage.txt"));
-        for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
-            out.writeBytes(line + "\n");
-        }
-        wikiPythonPageIn.close();
-        out.close();
-
-        out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiScalaPage.txt"));
-        for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
-            out.writeBytes(line + "\n");
-        }
-        wikiScalaPageIn.close();
-        out.close();
-
-        conf.set("mapred.job.tracker", "local");
-    }
-
-    @Test
-    public void testWordCountWithWikiJavaPageDataSet() throws Exception {
         String[] arg = new String[]{"/tmp/WordCountWithCombinerTest/WikiJavaPage.txt", "/tmp/WordCountWithCombinerTest/WikiJavaPageResult/"};
         boolean isSuccessful = WordCountWithCombiner.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithCombinerTest/WikiJavaPageResult/"));
 
         for (int i = 0; i < status.length; i++) {
@@ -87,23 +64,36 @@ public class WordCountWithCombinerTest extends HadoopMiniClusterTestBase {
         }
 
         assertTrue(isSuccessful);
-        assertEquals("Key = for, Value = 2", wordCount.get("for").intValue(), 2);
-        assertEquals("Key = developed, Value = 3", wordCount.get("developed").intValue(), 3);
-        assertEquals("Key = is, Value = 3", wordCount.get("is").intValue(), 3);
-        assertEquals("Key = as, Value = 6", wordCount.get("as").intValue(), 6);
-        assertEquals("Key = the, Value = 5", wordCount.get("the").intValue(), 5);
-        assertEquals("Key = in, Value = 4", wordCount.get("in").intValue(), 4);
-        assertEquals("Key = java, Value = 10", wordCount.get("java").intValue(), 10);
+        assertEquals("Key = for, Value = 3", 3, wordCount.get("for").intValue());
+        assertEquals("Key = developed, Value = 3", 3, wordCount.get("developed").intValue());
+        assertEquals("Key = is, Value = 4", 4, wordCount.get("is").intValue());
+        assertEquals("Key = as, Value = 6", 6, wordCount.get("as").intValue());
+        assertEquals("Key = the, Value = 6", 6, wordCount.get("the").intValue());
+        assertEquals("Key = in, Value = 4", 4, wordCount.get("in").intValue());
+        assertEquals("Key = java, Value = 10", 10, wordCount.get("java").intValue());
     }
 
     @Test
     public void testWordCountWithWikiPythonPageDataSet() throws Exception {
+        BufferedReader wikiPythonPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiPythonPage.txt")));
+
+        FSDataOutputStream out;
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
+        FileSystem fs = FileSystem.get(conf);
+
+        out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiPythonPage.txt"));
+        for (String line = wikiPythonPageIn.readLine(); line != null; line = wikiPythonPageIn.readLine()) {
+            out.writeBytes(line + "\n");
+        }
+        wikiPythonPageIn.close();
+        out.close();
         String[] arg = new String[]{"/tmp/WordCountWithCombinerTest/WikiPythonPage.txt", "/tmp/WordCountWithCombinerTest/WikiPythonPageResult/"};
+
         boolean isSuccessful = WordCountWithCombiner.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithCombinerTest/WikiPythonPageResult/"));
 
         for (int i = 0; i < status.length; i++) {
@@ -133,12 +123,26 @@ public class WordCountWithCombinerTest extends HadoopMiniClusterTestBase {
 
     @Test
     public void testWordCountWithWikiScalaPageDataSet() throws Exception {
+        BufferedReader wikiScalaPageIn = new BufferedReader(new InputStreamReader(WordCountTest.class.getClassLoader().getResourceAsStream("com/dbtsai/hadoop/main/WikiScalaPage.txt")));
+
+        FSDataOutputStream out;
+        Configuration conf = super.getConfiguration();
+        conf.set("mapred.job.tracker", "local");
+
+        FileSystem fs = FileSystem.get(conf);
+
+        out = fs.create(new Path("/tmp/WordCountWithCombinerTest/", "WikiScalaPage.txt"));
+        for (String line = wikiScalaPageIn.readLine(); line != null; line = wikiScalaPageIn.readLine()) {
+            out.writeBytes(line + "\n");
+        }
+        wikiScalaPageIn.close();
+        out.close();
+
         String[] arg = new String[]{"/tmp/WordCountWithCombinerTest/WikiScalaPage.txt", "/tmp/WordCountWithCombinerTest/WikiScalaPageResult/"};
         boolean isSuccessful = WordCountWithCombiner.main(arg, conf);
 
         Map<String, Long> wordCount = new HashMap<String, Long>();
 
-        FileSystem fs = FileSystem.get(conf);
         FileStatus[] status = fs.listStatus(new Path("/tmp/WordCountWithCombinerTest/WikiScalaPageResult/"));
 
         for (int i = 0; i < status.length; i++) {

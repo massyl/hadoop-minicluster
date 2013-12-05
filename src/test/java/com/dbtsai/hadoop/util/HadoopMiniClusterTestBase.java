@@ -1,8 +1,8 @@
 package com.dbtsai.hadoop.util;
 
 import org.apache.hadoop.conf.Configuration;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,14 +14,14 @@ import org.junit.BeforeClass;
 
 public class HadoopMiniClusterTestBase {
 
-    private static MiniCluster miniCluster;
+    private MiniCluster miniCluster;
 
-    public static Configuration getConfiguration() {
+    public Configuration getConfiguration() {
         return miniCluster.configuration().get();
     }
 
-    @BeforeClass
-    public static synchronized void oneTimeSetUp() {
+    @Before
+    public void setUp() {
         // one-time initialization code
         if (miniCluster == null) {
             System.out.println("\n@BeforeClass - Setting Up Hadoop Mini Cluster\n");
@@ -30,13 +30,13 @@ public class HadoopMiniClusterTestBase {
         }
     }
 
-//    @AfterClass
-//    public static synchronized void oneTimeTearDown() {
-//        // one-time cleanup code
-//        if (miniCluster != null) {
-//            System.out.println("\n@AfterClass - Tearing Down Hadoop Mini Cluster\n");
-//            miniCluster.shutdown();
-//            miniCluster = null;
-//        }
-//    }
+    @After
+    public void tearDown() {
+        // one-time cleanup code
+        if (miniCluster != null) {
+            System.out.println("\n@AfterClass - Tearing Down Hadoop Mini Cluster\n");
+            miniCluster.shutdown();
+            miniCluster = null;
+        }
+    }
 }
